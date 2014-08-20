@@ -6,8 +6,13 @@
 # Loading necessary packages
 
 import urllib2
-from BeautifulSoup import BeautifulSoup
+import codecs
+import unicodedata
 import nltk
+from BeautifulSoup import BeautifulSoup
+import sys 
+reload(sys) 
+sys.setdefaultencoding("utf-8")
 
 # This function gets all the links in a URL, limited to a specified
 # domain name.
@@ -42,7 +47,7 @@ def getParagraphs(url):
 		
 		para_trat = acentos(nltk.clean_html(str(paragraph)))
 		if (len(para_trat) > 50):
-			paragraphs.append(para_trat.replace('\n',' '))
+			paragraphs.append(para_trat.replace('\n',' ').replace('\t',' ').replace('\r',' ').replace('|',''))
 	
 	return paragraphs
 	
@@ -349,9 +354,27 @@ def acentos(text):
 	
 	return text
 
+def outText(fname, text):
+	
+	fileOpen = codecs.open(fname, 'a', 'utf-8')
+	fileOpen.write(text)
+	fileOpen.close()
 
-para = getParagraphs('http://g1.globo.com/mundo/noticia/2014/08/papa-agradece-oracoes-apos-morte-de-familiares-em-acidente.html')
+# Crawling Globo Esporte
 
-for i in para:
-	print i
+links = spider('http://globoesporte.globo.com/','globoesporte.globo.com')
+
+for link in links:
+	
+	ident = 'ESPORTE'
+	try:
+		prgs = getParagraphs('http://' + link)
+	except:
+		continue
+	
+	for p in prgs:
+		print p
+		outText('saida_ESPORTE_2.txt',ident + '|' + link + '|' + p + '\n')
+	
+	print '[CONCLUIDO] ' + link
 	
