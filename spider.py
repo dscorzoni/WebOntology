@@ -9,6 +9,7 @@ import urllib2
 import codecs
 import unicodedata
 import nltk
+import sqlite3 as lite
 from BeautifulSoup import BeautifulSoup
 import sys 
 reload(sys) 
@@ -360,21 +361,34 @@ def outText(fname, text):
 	fileOpen.write(text)
 	fileOpen.close()
 
-# Crawling Globo Esporte
+# Spider Sports
 
-links = spider('http://globoesporte.globo.com/','globoesporte.globo.com')
+def getSports():
 
-for link in links:
-	
-	ident = 'ESPORTE'
-	try:
-		prgs = getParagraphs('http://' + link)
-	except:
-		continue
-	
-	for p in prgs:
-		print p
-		outText('saida_ESPORTE_2.txt',ident + '|' + link + '|' + p + '\n')
-	
-	print '[CONCLUIDO] ' + link
-	
+	links = ["globoesporte.globo.com",
+			 "esporte.uol.com.br",
+			 "esportes.terra.com.br",
+			 "esportes.estadao.com.br",
+			 "esporte.ig.com.br",
+			 "gazetaesportiva.net",
+			 "esportes.r7.com",
+			 "superesportes.com.br",
+			 "esportes.br.msn.com",
+			 "esporte.gov.br"
+			 "www1.folha.uol.com.br/esporte"]
+
+	con = lite.connect('onto_data.db')
+	cur = con.cursor()
+
+	for link in links:
+		
+		try:
+			urls = spider('http://' + link, link)
+		except:
+			continue
+			
+		for url in urls:
+			cur.execute("INSERT INTO spider_esporte (url) VALUES ('" + url + "')")
+			
+	con.commit()
+	con.close()
